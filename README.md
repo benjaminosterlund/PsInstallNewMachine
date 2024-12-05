@@ -1,0 +1,2 @@
+# PsInstallNewMachine
+InstallMyMachine
