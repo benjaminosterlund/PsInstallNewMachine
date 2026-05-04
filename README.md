@@ -70,3 +70,11 @@ Then local app `installerPath` values in `apps.json` should be relative to one o
 ## Run
 
 Use PowerShell 7, then run `InstallMachine.ps1`.
+
+## Discovery Scripts
+
+Use these scripts to discover installed software/modules and interactively add entries to config files:
+
+- `ScanAndUpdateAppsConfig.ps1`: scans winget apps and local installer files, asks per item before adding to `config/apps.json`
+- `ScanAndUpdateModulesConfig.ps1`: scans installed PowerShell modules, asks per item before adding to `config/modules.json`
+- `ScanAndUpdateConfigs.ps1`: runs both scripts above

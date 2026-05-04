@@ -7,11 +7,9 @@
 
 Assert-WingetAvailable
 
-$myConfig = Get-InstallConfig
+$null = Get-InstallConfig
 
-$dirDocuments = "$env:USERPROFILE\Documents"
 $dirDownloads = "$env:USERPROFILE\Downloads"
-$dirRepositories = "$dirDocuments\source\repos"
 
 & (Join-Path $PSScriptRoot "InstallPsModulesAndProfile.ps1")
 
@@ -29,15 +27,5 @@ Invoke-VsCodeLoginStep
 
 # Install php with PsPhpInstall
 # Not implemented yet
-
-
-# create Local Repositories
-New-Item -ItemType Directory -Path $dirRepositories -Force
-
-
-#Set git Credentials
-git config --global user.name $myConfig.GitName
-git config --global user.email $myConfig.GitEmail
-git config --global init.defaultBranch main
 
 Write-Host "Done!"

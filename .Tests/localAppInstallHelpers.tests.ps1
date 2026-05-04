@@ -19,6 +19,7 @@ Describe 'local app helpers' {
         Mock Install-AppFromLocalSource {
             return $true
         }
+        Mock Invoke-AppPostInstallAction {}
     }
 
     It 'ShouldPromptPerLocalAppAndInstall' {
@@ -26,6 +27,7 @@ Describe 'local app helpers' {
 
         Should -Invoke -CommandName Confirm-Action -Times 2
         Should -Invoke -CommandName Install-AppFromLocalSource -Times 2
+        Should -Invoke -CommandName Invoke-AppPostInstallAction -Times 2
     }
 
     It 'ShouldReturnInstalledLocalApps' {

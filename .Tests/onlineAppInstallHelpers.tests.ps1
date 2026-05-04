@@ -19,6 +19,7 @@ Describe 'online app helpers' {
         Mock Install-AppFromOnlineSource {
             return $true
         }
+        Mock Invoke-AppPostInstallAction {}
     }
 
     It 'ShouldPromptPerOnlineAppAndInstall' {
@@ -26,6 +27,7 @@ Describe 'online app helpers' {
 
         Should -Invoke -CommandName Confirm-Action -Times 2
         Should -Invoke -CommandName Install-AppFromOnlineSource -Times 2
+        Should -Invoke -CommandName Invoke-AppPostInstallAction -Times 2
     }
 
     It 'ShouldReturnInstalledOnlineApps' {

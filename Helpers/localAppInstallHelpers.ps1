@@ -16,9 +16,12 @@ function Install-LocalApps
             continue
         }
 
-        if (Install-AppFromLocalSource -App $app) {
+        $installed = Install-AppFromLocalSource -App $app
+        if ($installed) {
             $installedApps += $app.name
         }
+
+        Invoke-AppPostInstallAction -App $app -WasInstalled:$installed
     }
 
     return $installedApps

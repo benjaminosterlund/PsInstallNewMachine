@@ -2,8 +2,28 @@
   { "name": "7zip.7zip", "installSource": "winget" },
   { "name": "Axosoft.GitKraken", "installSource": "winget" },
   { "name": "Dropbox.Dropbox", "installSource": "winget" },
-  { "name": "Git.Git", "installSource": "winget" },
-  { "name": "GitHub.cli", "installSource": "winget" },
+  {
+    "name": "Git.Git",
+    "installSource": "winget",
+    "postInstall": {
+      "scriptPath": "Scripts\\PostInstall\\SetupGit.ps1",
+      "args": [],
+      "promptMessage": "Run Git setup now?",
+      "runWhen": "installed",
+      "continueOnError": true
+    }
+  },
+  {
+    "name": "GitHub.cli",
+    "installSource": "winget",
+    "postInstall": {
+      "scriptPath": "Scripts\\PostInstall\\SetupGitHubCliAuth.ps1",
+      "args": [],
+      "promptMessage": "Run GitHub CLI authentication now?",
+      "runWhen": "installed",
+      "continueOnError": true
+    }
+  },
   { "name": "Google.Chrome", "installSource": "winget" },
   { "name": "Mozilla.Firefox.DeveloperEdition", "installSource": "winget" },
   { "name": "Mozilla.Firefox", "installSource": "winget" },
@@ -26,10 +46,9 @@
     "checkPath": "C:\\Program Files\\FileZilla FTP Client\\filezilla.exe"
   },
   {
-    "name": "ExampleNasApp",
+    "name": "bpmanlyz.exe",
     "installSource": "local",
-    "installerPath": "ExampleNasApp\\setup.exe",
-    "installArgs": ["/S"],
-    "checkPath": "C:\\Program Files\\ExampleNasApp"
+    "installerPath": "bpmanlyz.exe",
+    "installArgs": []
   }
 ]

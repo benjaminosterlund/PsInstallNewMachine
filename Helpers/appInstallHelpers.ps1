@@ -8,6 +8,87 @@ function Get-Apps
     return Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
 }
 
+function Invoke-AppPostInstallAction
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$App,
+
+        [Parameter(Mandatory = $true)]
+        [bool]$WasInstalled
+    )
+
+    if (-not $App.PSObject.Properties['postInstall']) {
+        return
+    }
+
+    $postInstall = $App.postInstall
+    if (-not $postInstall) {
+        return
+    }
+
+    $runWhen = "installed"
+    if ($postInstall.PSObject.Properties['runWhen'] -and -not [string]::IsNullOrWhiteSpace($postInstall.runWhen)) {
+        $runWhen = [string]$postInstall.runWhen
+    }
+
+    if ($runWhen -ieq "installed" -and -not $WasInstalled) {
+        return
+    }
+
+    if (-not $postInstall.PSObject.Properties['scriptPath'] -or [string]::IsNullOrWhiteSpace($postInstall.scriptPath)) {
+        Write-Warning "Skipping post-install for $($App.name): scriptPath is missing."
+        return
+    }
+
+    $repoRoot = Split-Path -Path $PSScriptRoot -Parent
+    $scriptPath = [string]$postInstall.scriptPath
+    $resolvedScriptPath = if ([System.IO.Path]::IsPathRooted($scriptPath)) {
+        $scriptPath
+    }
+    else {
+        Join-Path $repoRoot $scriptPath
+    }
+
+    if (-not (Test-Path -LiteralPath $resolvedScriptPath)) {
+        Write-Warning "Skipping post-install for $($App.name): script not found at '$resolvedScriptPath'."
+        return
+    }
+
+    $promptMessage = "Run post-install script for '$($App.name)'?"
+    if ($postInstall.PSObject.Properties['promptMessage'] -and -not [string]::IsNullOrWhiteSpace($postInstall.promptMessage)) {
+        $promptMessage = [string]$postInstall.promptMessage
+    }
+
+    if (-not (Confirm-Action -Message $promptMessage)) {
+        Write-Host "Skipping post-install for $($App.name)."
+        return
+    }
+
+    $argumentList = @()
+    if ($postInstall.PSObject.Properties['args'] -and $postInstall.args) {
+        $argumentList += [string[]]$postInstall.args
+    }
+
+    $continueOnError = $false
+    if ($postInstall.PSObject.Properties['continueOnError']) {
+        $continueOnError = [bool]$postInstall.continueOnError
+    }
+
+    try {
+        & $resolvedScriptPath @argumentList
+        Write-Host "Post-install finished for $($App.name)."
+    }
+    catch {
+        if ($continueOnError) {
+            Write-Warning "Post-install failed for $($App.name): $($_.Exception.Message)"
+        }
+        else {
+            throw
+        }
+    }
+}
+
 function Install-Apps
 {
     param(
@@ -52,6 +133,8 @@ function Install-Apps
         if ($installed) {
             $installedApps += $app.name
         }
+
+        Invoke-AppPostInstallAction -App $app -WasInstalled:$installed
     }
 
     return $installedApps
@@ -75,9 +158,12 @@ function Install-WingetApps
             continue
         }
 
-        if (Install-AppFromWinget -name $app.name) {
+        $installed = Install-AppFromWinget -name $app.name
+        if ($installed) {
             $installedApps += $app.name
         }
+
+        Invoke-AppPostInstallAction -App $app -WasInstalled:$installed
     }
 
     return $installedApps

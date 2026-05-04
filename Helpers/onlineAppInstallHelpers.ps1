@@ -20,9 +20,12 @@ function Install-OnlineApps
             continue
         }
 
-        if (Install-AppFromOnlineSource -App $app -DownloadDirectory $DownloadDirectory) {
+        $installed = Install-AppFromOnlineSource -App $app -DownloadDirectory $DownloadDirectory
+        if ($installed) {
             $installedApps += $app.name
         }
+
+        Invoke-AppPostInstallAction -App $app -WasInstalled:$installed
     }
 
     return $installedApps

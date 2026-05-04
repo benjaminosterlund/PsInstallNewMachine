@@ -34,6 +34,7 @@ Describe 'installApps' {
             )
             return $true
         }
+        Mock Invoke-AppPostInstallAction {}
         Mock Confirm-Action {
             return $true
         }
@@ -49,6 +50,7 @@ Describe 'installApps' {
         Should -Invoke -CommandName Install-AppFromWinget -Times 1
         Should -Invoke -CommandName Install-AppFromOnlineSource -Times 1
         Should -Invoke -CommandName Install-AppFromLocalSource -Times 1
+        Should -Invoke -CommandName Invoke-AppPostInstallAction -Times 3
     }
 
     It 'ShouldFilterByInstallSource' {
@@ -64,6 +66,7 @@ Describe 'installApps' {
 
         Should -Invoke -CommandName Confirm-Action -Times 1
         Should -Invoke -CommandName Install-AppFromWinget -Times 1
+        Should -Invoke -CommandName Invoke-AppPostInstallAction -Times 1
         Should -Invoke -CommandName Install-AppFromOnlineSource -Times 0
         Should -Invoke -CommandName Install-AppFromLocalSource -Times 0
     }
