@@ -1,6 +1,6 @@
 # Pester https://pester.dev/docs/usage/mocking
 BeforeAll{
-    . $PSCommandPath.Replace('.tests.ps1','.ps1')
+    . (Join-Path $PSScriptRoot '..\Helpers\moduleInstallHelpers.ps1')
 }
 
 Describe 'installModules' {

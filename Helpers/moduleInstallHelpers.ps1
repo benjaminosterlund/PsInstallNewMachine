@@ -1,18 +1,11 @@
 function Get-PsModules
 {
-    return @(
-        @{name = "PowerHTML" },
-        @{name = "PSParseHTML" },
-        @{name = "SimplySql" },    
-        @{name = "SqlServer" },
-        @{name = "PSSharedGoods" },
-        @{name = "DockerCompletion" },
-        @{name = "Pester" },
-        @{name = "PSReadLine" },
-        @{name = "7Zip4Powershell" },
-        @{name = "PSWritePDF" },
-        @{name = "PSWriteWord" }
-    );
+    $configPath = Join-Path $PSScriptRoot "..\config\modules.json"
+    if (-not (Test-Path -LiteralPath $configPath)) {
+        throw "Modules config file not found: $configPath"
+    }
+
+    return Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
 }
 
 function Install-PsModules
