@@ -1,13 +1,59 @@
 [
-  { "name": "PowerHTML" },
-  { "name": "PSParseHTML" },
-  { "name": "SimplySql" },
-  { "name": "SqlServer" },
-  { "name": "PSSharedGoods" },
-  { "name": "DockerCompletion" },
-  { "name": "Pester" },
-  { "name": "PSReadLine" },
-  { "name": "7Zip4Powershell" },
-  { "name": "PSWritePDF" },
-  { "name": "PSWriteWord" }
+  {
+    "name": "PowerHTML"
+  },
+  {
+    "name": "PSParseHTML"
+  },
+  {
+    "name": "SimplySql"
+  },
+  {
+    "name": "SqlServer"
+  },
+  {
+    "name": "PSSharedGoods"
+  },
+  {
+    "name": "DockerCompletion"
+  },
+  {
+    "name": "Pester"
+  },
+  {
+    "name": "PSReadLine"
+  },
+  {
+    "name": "7Zip4Powershell"
+  },
+  {
+    "name": "PSWritePDF"
+  },
+  {
+    "name": "PSWriteWord"
+  },
+  {
+    "name": "DocTreeGenerator"
+  },
+  {
+    "name": "PdfLexer"
+  },
+  {
+    "name": "PSGitCompletions"
+  },
+  {
+    "name": "PSMenu"
+  },
+  {
+    "name": "PsOcr"
+  },
+  {
+    "name": "PSWriteHTML"
+  },
+  {
+    "name": "ReadPDF"
+  },
+  {
+    "name": "WifiTools"
+  }
 ]
