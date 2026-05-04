@@ -30,6 +30,7 @@ Install lists are stored in JSON files so updates do not require editing script 
 ```json
 [
 	{ "name": "Git.Git", "installSource": "winget" },
+	{ "name": "Git", "installSource": "winget", "wingetId": "Git.Git" },
 	{
 		"name": "FileZilla",
 		"installSource": "online",
@@ -47,6 +48,8 @@ Install lists are stored in JSON files so updates do not require editing script 
 	}
 ]
 ```
+
+For winget apps, `wingetId` is optional but recommended. If omitted, the installer uses `name` as the winget package ID (legacy behavior).
 
 ### config.json (local installs)
 
@@ -78,3 +81,5 @@ Use these scripts to discover installed software/modules and interactively add e
 - `ScanAndUpdateAppsConfig.ps1`: scans winget apps and local installer files, asks per item before adding to `config/apps.json`
 - `ScanAndUpdateModulesConfig.ps1`: scans installed PowerShell modules, asks per item before adding to `config/modules.json`
 - `ScanAndUpdateConfigs.ps1`: runs both scripts above
+
+`ScanAndUpdateAppsConfig.ps1` will, by default, scan installed programs visible via `winget list` and export data, then ask before adding missing entries. Use `-SkipInstalledPrograms` if you only want export-based package discovery.

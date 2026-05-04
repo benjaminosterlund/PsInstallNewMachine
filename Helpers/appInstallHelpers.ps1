@@ -117,7 +117,12 @@ function Install-Apps
 
         switch ($source) {
             "winget" {
-                $installed = Install-AppFromWinget -name $app.name
+                $wingetId = $null
+                if ($app.PSObject.Properties['wingetId'] -and -not [string]::IsNullOrWhiteSpace($app.wingetId)) {
+                    $wingetId = [string]$app.wingetId
+                }
+
+                $installed = Install-AppFromWinget -name $app.name -id $wingetId
             }
             "online" {
                 $installed = Install-AppFromOnlineSource -App $app -DownloadDirectory $DownloadDirectory
@@ -158,7 +163,12 @@ function Install-WingetApps
             continue
         }
 
-        $installed = Install-AppFromWinget -name $app.name
+        $wingetId = $null
+        if ($app.PSObject.Properties['wingetId'] -and -not [string]::IsNullOrWhiteSpace($app.wingetId)) {
+            $wingetId = [string]$app.wingetId
+        }
+
+        $installed = Install-AppFromWinget -name $app.name -id $wingetId
         if ($installed) {
             $installedApps += $app.name
         }
@@ -172,17 +182,21 @@ function Install-WingetApps
 function Install-AppFromWinget
 {
     param(
-        [string]$name = ""
+        [string]$name = "",
+        [string]$id = ""
     )
 
-    $listApp = winget list --exact -q $name
-    if (![String]::Join("", $listApp).Contains($name)) {
-        Write-host "Installing: " $name
-        winget install -e -h --accept-source-agreements --accept-package-agreements --id $name 
+    $effectiveId = if (-not [string]::IsNullOrWhiteSpace($id)) { $id } else { $name }
+    $displayName = if (-not [string]::IsNullOrWhiteSpace($name)) { $name } else { $effectiveId }
+
+    $listApp = winget list --id $effectiveId --exact 2>$null
+    if (![String]::Join("", $listApp).Contains($effectiveId)) {
+        Write-host "Installing: " $displayName
+        winget install -e -h --accept-source-agreements --accept-package-agreements --id $effectiveId
         return $true
     }
     else {
-        Write-host "Skipping: " $name " (already installed)"
+        Write-host "Skipping: " $displayName " (already installed)"
     }
     return $false
 }
