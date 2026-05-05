@@ -11,15 +11,11 @@ $null = Get-InstallConfig
 
 $dirDownloads = "$env:USERPROFILE\Downloads"
 
-& (Join-Path $PSScriptRoot "InstallPsModulesAndProfile.ps1")
-
-
 Install-WingetApps
 
 Install-OnlineApps -DownloadDirectory $dirDownloads
 
 Install-LocalApps
-
 
 Start-NewCurrentShellInstance
 

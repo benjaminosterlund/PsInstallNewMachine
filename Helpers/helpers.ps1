@@ -95,11 +95,6 @@ function Get-InstallConfig {
 }
 
 
-function Start-NewCurrentShellInstance {
-    $shellPath = Get-Process -Id $PID | Select-Object -ExpandProperty Path
-    Invoke-Command { & $shellPath } -NoNewScope
-}
-
 function Invoke-VsCodeLoginStep {
     if (-not (Confirm-Action -Message "Open VS Code now and login with your GitHub account?")) {
         Write-Host "Skipping VS Code login step."
