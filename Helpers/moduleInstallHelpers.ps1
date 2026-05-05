@@ -13,9 +13,14 @@ function Install-PsModules
     $installedModules = @()
     $psGalleryModules = Get-PsModules
 
-    Foreach ($module in $psGalleryModules) {
-        if(Install-PsModule -name $module.name){
-            $installedModules += $module.name
+    foreach ($module in $psGalleryModules) {
+        $name = $module.name
+        $prefix = $null
+        if ($module.PSObject.Properties["prefix"]) {
+            $prefix = $module.prefix
+        }
+        if (Install-PsModule -name $name -prefix $prefix) {
+            $installedModules += $name
         }
     }
 
@@ -26,15 +31,19 @@ function Install-PsModules
 function Install-PsModule
 {
     param(
-        [string]$name = ""
+        [string]$name = "",
+        [string]$prefix = $null
     )
 
     if (-not (Get-Module -ErrorAction Ignore -ListAvailable $name)) {
-        Write-Verbose "Installing $name module for the current user..."
-        Install-Module -Scope CurrentUser $name -ErrorAction Stop
+        Write-Host "`n`nInstalling $name module for the current user..." -ForegroundColor Cyan
+        Install-Module -Scope CurrentUser -Name $name -AllowClobber -ErrorAction Stop
+        if ($prefix) {
+            Write-Host "Module $name should be imported with prefix $prefix to avoid naming conflicts." -ForegroundColor Yellow
+        }
         return $true
-    }else{
-        Write-Verbose "$name module is already installed."
+    } else {
+        Write-Host "$name module is already installed." -ForegroundColor Yellow
     }
     return $false
 }

@@ -1,59 +1,76 @@
 [
   {
-    "name": "PowerHTML"
+    "name": "PowerHTML",
+    "import": false
   },
   {
-    "name": "PSParseHTML"
+    "name": "PsParseHTML",
+    "prefix": "HtmlTinkerX",
+    "import": false
   },
   {
-    "name": "SimplySql"
+    "name": "SimplySql",
+    "import": true
   },
   {
-    "name": "SqlServer"
+    "name": "SqlServer",
+    "import": false
   },
   {
-    "name": "PSSharedGoods"
+    "name": "PSSharedGoods",
+    "import": false
   },
   {
-    "name": "DockerCompletion"
+    "name": "DockerCompletion",
+    "import": false
   },
   {
-    "name": "Pester"
+    "name": "Pester",
+    "import": true
   },
   {
-    "name": "PSReadLine"
+    "name": "7Zip4Powershell",
+    "import": true
   },
   {
-    "name": "7Zip4Powershell"
+    "name": "PSWritePDF",
+    "import": false
   },
   {
-    "name": "PSWritePDF"
+    "name": "PSWriteWord",
+    "import": false
   },
   {
-    "name": "PSWriteWord"
+    "name": "DocTreeGenerator",
+    "import": false
   },
   {
-    "name": "DocTreeGenerator"
+    "name": "PdfLexer",
+    "prefix": "Lex",
+    "import": false
   },
   {
-    "name": "PdfLexer"
+    "name": "PSGitCompletions",
+    "import": true
   },
   {
-    "name": "PSGitCompletions"
+    "name": "PSMenu",
+    "import": true
   },
   {
-    "name": "PSMenu"
+    "name": "PsOcr",
+    "import": false
   },
   {
-    "name": "PsOcr"
+    "name": "PSWriteHTML",
+    "import": false
   },
   {
-    "name": "PSWriteHTML"
+    "name": "ReadPDF",
+    "import": false
   },
   {
-    "name": "ReadPDF"
-  },
-  {
-    "name": "WifiTools"
+    "name": "WifiTools",
+    "import": false
   }
 ]

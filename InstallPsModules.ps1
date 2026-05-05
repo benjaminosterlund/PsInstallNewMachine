@@ -6,6 +6,4 @@ Assert-WingetAvailable
 
 Install-PsModules
 
-Set-UserPsProfileFromRepo
-
-Write-Host "Modules installed and PS profile configured." -ForegroundColor Green
+Write-Host "Modules installed" -ForegroundColor Green
