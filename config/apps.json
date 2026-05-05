@@ -1,19 +1,23 @@
 [
   {
-    "name": "7zip.7zip",
+    "wingetId": "7zip.7zip",
+    "name": "7-Zip",
     "installSource": "winget"
   },
   {
-    "name": "Axosoft.GitKraken",
+    "name": "GitKraken",
+    "wingetId": "Axosoft.GitKraken",
     "installSource": "winget"
   },
   {
-    "name": "Dropbox.Dropbox",
-    "installSource": "winget"
-  },
-  {
-    "name": "Git.Git",
+    "name": "Dropbox",
     "installSource": "winget",
+    "wingetId": "Dropbox.Dropbox"
+  },
+  {
+    "name": "Git",
+    "installSource": "winget",
+    "wingetId": "Git.Git",
     "postInstall": {
       "scriptPath": "Scripts\\PostInstall\\SetupGit.ps1",
       "args": [],
@@ -25,6 +29,7 @@
   {
     "name": "GitHub.cli",
     "installSource": "winget",
+    "wingetId": "GitHub.cli",
     "postInstall": {
       "scriptPath": "Scripts\\PostInstall\\SetupGitHubCliAuth.ps1",
       "args": [],
@@ -34,55 +39,68 @@
     }
   },
   {
-    "name": "Google.Chrome",
+    "name": "Google Chrome",
+    "installSource": "winget",
+    "wingetId": "Google.Chrome"
+  },
+  {
+    "name": "Firefox Developer Edition (en-US)",
+    "wingetId": "Mozilla.Firefox.DeveloperEdition",
     "installSource": "winget"
   },
   {
-    "name": "Mozilla.Firefox.DeveloperEdition",
+    "name": "Mozilla Firefox (en-US)",
+    "wingetId": "Mozilla.Firefox",
     "installSource": "winget"
   },
   {
-    "name": "Mozilla.Firefox",
+    "name": "Microsoft Visual Studio Community",
+    "wingetId": "Microsoft.VisualStudio.Community",
     "installSource": "winget"
   },
   {
-    "name": "Microsoft.SQLServerManagementStudio",
+    "name": "Microsoft Visual Studio Code",
+    "wingetId": "Microsoft.VisualStudioCode",
     "installSource": "winget"
   },
   {
-    "name": "Microsoft.VisualStudio.2022.Community",
+    "name": "Windows Terminal",
+    "wingetId": "Microsoft.WindowsTerminal",
     "installSource": "winget"
   },
   {
-    "name": "Microsoft.VisualStudioCode",
+    "wingetId": "OpenJS.NodeJS.LTS",
+    "name": "Node.js (LTS)",
     "installSource": "winget"
   },
   {
-    "name": "Microsoft.WindowsTerminal",
+    "name": "VLC media player",
+    "wingetId": "VideoLAN.VLC",
     "installSource": "winget"
   },
   {
-    "name": "OpenJS.NodeJS",
+    "name": "Microsoft Teams",
+    "wingetId": "Microsoft.Teams",
     "installSource": "winget"
   },
   {
-    "name": "VideoLAN.VLC",
+    "name": "Zoom Workplace",
+    "wingetId": "Zoom.Zoom",
     "installSource": "winget"
   },
   {
-    "name": "Microsoft.Teams",
+    "name": "Microsoft SQL Server 2025 Express",
+    "wingetId": "Microsoft.SQLServer.2025.Express",
     "installSource": "winget"
   },
   {
-    "name": "Zoom.Zoom",
+    "wingetId": "Microsoft.SQLServerManagementStudio.22",
+    "name": "Microsoft SQL Server Management Studio 22 ",
     "installSource": "winget"
   },
   {
-    "name": "Microsoft.SQLServer.2022.Express",
-    "installSource": "winget"
-  },
-  {
-    "name": "Microsoft.Sqlcmd",
+    "wingetId": "Microsoft.Sqlcmd",
+    "name": "Sqlcmd Tools",
     "installSource": "winget"
   },
   {
@@ -100,102 +118,97 @@
     "installArgs": []
   },
   {
-    "name": "AcroSoftware.CutePDFWriter",
+    "name": "CutePDF Writer",
     "installSource": "winget",
     "wingetId": "AcroSoftware.CutePDFWriter"
   },
   {
-    "name": "Audacity.Audacity",
+    "name": "Audacity",
     "installSource": "winget",
     "wingetId": "Audacity.Audacity"
   },
   {
-    "name": "DBBrowserForSQLite.DBBrowserForSQLite",
+    "name": "DB Browser for SQLite",
     "installSource": "winget",
     "wingetId": "DBBrowserForSQLite.DBBrowserForSQLite"
   },
   {
-    "name": "Docker.DockerDesktop",
+    "name": "Docker Desktop",
     "installSource": "winget",
     "wingetId": "Docker.DockerDesktop"
   },
   {
-    "name": "FlaUI.FlaUInspect",
+    "name": "FlaUInspect",
     "installSource": "winget",
     "wingetId": "FlaUI.FlaUInspect"
   },
   {
-    "name": "FlorianHeidenreich.Mp3tag",
+    "name": "Mp3tag",
     "installSource": "winget",
     "wingetId": "FlorianHeidenreich.Mp3tag"
   },
   {
-    "name": "GitHub.Copilot",
+    "name": "Copilot CLI",
     "installSource": "winget",
     "wingetId": "GitHub.Copilot"
   },
   {
-    "name": "Google.ChromeRemoteDesktopHost",
+    "name": "Chrome Remote Desktop Host",
     "installSource": "winget",
     "wingetId": "Google.ChromeRemoteDesktopHost"
   },
   {
-    "name": "JetBrains.dotPeek",
+    "name": "JetBrains dotPeek",
     "installSource": "winget",
     "wingetId": "JetBrains.dotPeek"
   },
   {
-    "name": "KirillOsenkov.MSBuildStructuredLogViewer",
+    "name": "MSBuild Structured Log Viewer",
     "installSource": "winget",
     "wingetId": "KirillOsenkov.MSBuildStructuredLogViewer"
   },
   {
-    "name": "MariaDB.Server",
+    "name": "MariaDB",
     "installSource": "winget",
     "wingetId": "MariaDB.Server"
   },
   {
-    "name": "Microsoft.NuGet",
+    "wingetId": "HeidiSQL.HeidiSQL",
+    "name": "HeidiSQL",
+    "installSource": "winget"
+  },
+  {
+    "name": "NuGet",
     "installSource": "winget",
     "wingetId": "Microsoft.NuGet"
   },
   {
-    "name": "Microsoft.VisualStudio.Community",
-    "installSource": "winget",
-    "wingetId": "Microsoft.VisualStudio.Community"
-  },
-  {
-    "name": "Microsoft.WSL",
+    "name": "Windows Subsystem for Linux",
     "installSource": "winget",
     "wingetId": "Microsoft.WSL"
   },
   {
-    "name": "nektos.act",
+    "name": "act",
     "installSource": "winget",
     "wingetId": "nektos.act"
   },
   {
-    "name": "OpenWhisperSystems.Signal",
+    "name": "Signal",
     "installSource": "winget",
     "wingetId": "OpenWhisperSystems.Signal"
   },
   {
-    "name": "RicoSuter.NSwagStudio",
+    "name": "NSwag Studio",
     "installSource": "winget",
     "wingetId": "RicoSuter.NSwagStudio"
   },
   {
-    "name": "ScooterSoftware.BeyondCompare.4",
-    "installSource": "winget",
-    "wingetId": "ScooterSoftware.BeyondCompare.4"
-  },
-  {
-    "name": "SlackTechnologies.Slack",
+    "name": "Slack",
     "installSource": "winget",
     "wingetId": "SlackTechnologies.Slack"
   },
   {
-    "name": "Synology.Assistant",
+    "name": "Synology Assistant",
     "installSource": "winget",
     "wingetId": "Synology.Assistant"
   }

@@ -122,7 +122,7 @@ function Install-Apps
                     $wingetId = [string]$app.wingetId
                 }
 
-                $installed = Install-AppFromWinget -name $app.name -id $wingetId
+                $installed = [bool](Install-AppFromWinget -name $app.name -id $wingetId)
             }
             "online" {
                 $installed = Install-AppFromOnlineSource -App $app -DownloadDirectory $DownloadDirectory
@@ -158,17 +158,12 @@ function Install-WingetApps
             continue
         }
 
-        if (-not (Confirm-Action -Message "Install winget app '$($app.name)'?")) {
-            Write-Host "Skipping winget app: $($app.name)"
-            continue
-        }
-
         $wingetId = $null
         if ($app.PSObject.Properties['wingetId'] -and -not [string]::IsNullOrWhiteSpace($app.wingetId)) {
             $wingetId = [string]$app.wingetId
         }
 
-        $installed = Install-AppFromWinget -name $app.name -id $wingetId
+        $installed = [bool](Install-AppFromWinget -name $app.name -id $wingetId)
         if ($installed) {
             $installedApps += $app.name
         }
@@ -189,14 +184,21 @@ function Install-AppFromWinget
     $effectiveId = if (-not [string]::IsNullOrWhiteSpace($id)) { $id } else { $name }
     $displayName = if (-not [string]::IsNullOrWhiteSpace($name)) { $name } else { $effectiveId }
 
-    $listApp = winget list --id $effectiveId --exact 2>$null
-    if (![String]::Join("", $listApp).Contains($effectiveId)) {
+    $listById = winget list --id $effectiveId --exact 2>$null
+    $listByName = winget list --name $displayName --exact 2>$null
+    $foundById = [String]::Join("", $listById).Contains($effectiveId)
+    $foundByName = [String]::Join("", $listByName).Contains($displayName)
+    $alreadyInstalled = $foundById -or $foundByName
+    if (-not $alreadyInstalled) {
+        if (-not (Confirm-Action -Message "Install winget app '$displayName'?")) {
+            return $false
+        }
         Write-host "Installing: " $displayName
-        winget install -e -h --accept-source-agreements --accept-package-agreements --id $effectiveId
+        winget install -e -h --accept-source-agreements --accept-package-agreements --id $effectiveId | Out-Null
         return $true
     }
     else {
-        Write-host "Skipping: " $displayName " (already installed)"
+        Write-host "Skipping: " $displayName " (already installed)" -ForegroundColor Yellow
     }
     return $false
 }

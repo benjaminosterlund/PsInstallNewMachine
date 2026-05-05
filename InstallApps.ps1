@@ -7,7 +7,7 @@
 
 Assert-WingetAvailable
 
-$null = Get-InstallConfig
+$myConfig = Get-InstallConfig
 
 $dirDownloads = "$env:USERPROFILE\Downloads"
 
