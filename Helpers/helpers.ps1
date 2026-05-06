@@ -93,20 +93,3 @@ function Get-InstallConfig {
     $config | ConvertTo-Json | Set-Content -LiteralPath $configPath
     return $config
 }
-
-
-function Invoke-VsCodeLoginStep {
-    if (-not (Confirm-Action -Message "Open VS Code now and login with your GitHub account?")) {
-        Write-Host "Skipping VS Code login step."
-        return
-    }
-
-    $codeCommand = Get-Command code -ErrorAction SilentlyContinue
-    if (-not $codeCommand) {
-        Write-Warning "The 'code' command is not available. Open VS Code manually and sign in."
-        return
-    }
-
-    & $codeCommand.Source
-    Read-Host "Log into VS Code with your GitHub account and press Enter to continue"
-}

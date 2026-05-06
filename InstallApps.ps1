@@ -1,3 +1,10 @@
+param(
+    [switch]$SkipWingetApps,
+    [switch]$SkipOnlineApps,
+    [switch]$SkipLocalApps,
+    [switch]$SkipVsCodeLogin
+)
+
 . (Join-Path $PSScriptRoot "Helpers\moduleInstallHelpers.ps1")
 . (Join-Path $PSScriptRoot "Helpers\appInstallHelpers.ps1")
 . (Join-Path $PSScriptRoot "Helpers\onlineAppInstallHelpers.ps1")
@@ -11,17 +18,20 @@ $myConfig = Get-InstallConfig
 
 $dirDownloads = "$env:USERPROFILE\Downloads"
 
-Install-WingetApps
+if (-not $SkipWingetApps) {
+    Install-WingetApps
+}
 
-Install-OnlineApps -DownloadDirectory $dirDownloads
+if (-not $SkipOnlineApps) {
+    Install-OnlineApps -DownloadDirectory $dirDownloads
+}
 
-Install-LocalApps
+if (-not $SkipLocalApps) {
+    Install-LocalApps
+}
 
-Start-NewCurrentShellInstance
-
-Invoke-VsCodeLoginStep
 
 # Install php with PsPhpInstall
 # Not implemented yet
 
-Write-Host "Done!"
+Write-Host "App installation complete." -ForegroundColor Green

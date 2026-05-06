@@ -61,7 +61,14 @@
   {
     "name": "Microsoft Visual Studio Code",
     "wingetId": "Microsoft.VisualStudioCode",
-    "installSource": "winget"
+    "installSource": "winget",
+    "postInstall": {
+      "scriptPath": "Scripts\\PostInstall\\SetupVsCode.ps1",
+      "args": [],
+      "promptMessage": "Run VS Code authentication now?",
+      "runWhen": "installed",
+      "continueOnError": true
+    }
   },
   {
     "name": "Windows Terminal",
