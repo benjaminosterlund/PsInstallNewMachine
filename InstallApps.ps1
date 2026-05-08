@@ -1,16 +1,13 @@
+[CmdletBinding()]
 param(
-    [switch]$SkipWingetApps,
-    [switch]$SkipOnlineApps,
-    [switch]$SkipLocalApps,
-    [switch]$SkipVsCodeLogin
+    [ValidateSet('winget', 'choco', 'online', 'local', 'manual')]
+    [string[]]$SkipSources = @(),
+    [switch]$Confirm
 )
 
-. (Join-Path $PSScriptRoot "Helpers\moduleInstallHelpers.ps1")
-. (Join-Path $PSScriptRoot "Helpers\appInstallHelpers.ps1")
-. (Join-Path $PSScriptRoot "Helpers\onlineAppInstallHelpers.ps1")
-. (Join-Path $PSScriptRoot "Helpers\localAppInstallHelpers.ps1")
-. (Join-Path $PSScriptRoot "Helpers\psProfileHelpers.ps1")
-. (Join-Path $PSScriptRoot "Helpers\helpers.ps1")
+. (Join-Path $PSScriptRoot "Helpers\importHelpers.ps1")
+
+# $ErrorActionPreference = "Stop"
 
 Assert-WingetAvailable
 
@@ -18,16 +15,11 @@ $myConfig = Get-InstallConfig
 
 $dirDownloads = "$env:USERPROFILE\Downloads"
 
-if (-not $SkipWingetApps) {
-    Install-WingetApps
-}
+$allSources = @('winget', 'choco', 'online', 'local', 'manual')
+$sourcesToRun = $allSources | Where-Object { $_ -notin ($SkipSources | ForEach-Object { $_.ToLowerInvariant() }) }
 
-if (-not $SkipOnlineApps) {
-    Install-OnlineApps -DownloadDirectory $dirDownloads
-}
-
-if (-not $SkipLocalApps) {
-    Install-LocalApps
+foreach ($source in $sourcesToRun) {
+    Install-Apps -InstallSource $source -DownloadDirectory $dirDownloads -Confirm:$Confirm
 }
 
 

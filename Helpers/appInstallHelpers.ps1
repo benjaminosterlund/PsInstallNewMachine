@@ -8,24 +8,249 @@ function Get-Apps
     return Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
 }
 
-function Invoke-AppPostInstallAction
+function Get-AppsBySource
 {
     param(
-        [Parameter(Mandatory = $true)]
-        [object]$App,
-
-        [Parameter(Mandatory = $true)]
-        [bool]$WasInstalled
+        [Parameter(Mandatory)]
+        [string]$InstallSource
     )
 
-    if (-not $App.PSObject.Properties['postInstall']) {
+    return @(Get-Apps | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_.installSource) -and $_.installSource.ToLowerInvariant() -eq $InstallSource.ToLowerInvariant()
+    })
+}
+
+function Where-AppShouldInstall {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [object]$App,
+
+        [switch]$Confirm
+    )
+
+    process {
+        $name = $App.Name
+        $source = if (-not [string]::IsNullOrWhiteSpace($App.installSource)) { $App.installSource.ToLowerInvariant() } else { 'unknown' }
+
+        Write-Verbose "[$source] Evaluating: $name"
+
+        if ([string]::IsNullOrWhiteSpace($name)) {
+            Write-Warning "Skipping $source app entry due to missing name."
+            return
+        }
+
+
+        $svc = if (-not [string]::IsNullOrWhiteSpace($App.checkService)) {
+            Get-Service -Name $App.checkService -ErrorAction SilentlyContinue
+        }
+        if ($svc -and $svc.Status -eq 'Running') {
+            Write-Host "Skipping: $name (service running: $($App.checkService))" -ForegroundColor Yellow
+            return
+        }
+
+        # $installedChecks = @{
+        #     'winget' = {
+        #         # $effectiveId = if ($App.PSObject.Properties['wingetId'] -and -not [string]::IsNullOrWhiteSpace($App.wingetId)) { $App.wingetId } else { $App.name }
+        #         # $foundById   = [String]::Join('', (winget list --id $effectiveId --exact 2>$null)).Contains($effectiveId)
+        #         # $foundByName = [String]::Join('', (winget list --name $App.name --exact 2>$null)).Contains($App.name)
+        #         # $foundById -or $foundByName
+        #         Test-WingetAppInstalled -App $App; break
+        #     }
+        #     'choco' = {
+        #         # $effectiveId = if ($App.PSObject.Properties['chocoId'] -and -not [string]::IsNullOrWhiteSpace($App.chocoId)) { $App.chocoId } else { $App.name }
+        #         # [bool](choco list $effectiveId --exact --limit-output 2>$null)
+        #         Test-ChocoAppInstalled -App $App; break
+        #     }
+        #     default  { $false }
+        # }
+
+        # $isInstalled = if ($installedChecks.ContainsKey($source)) {
+        #     Write-Verbose "[$source] Checking installed status for: $name"
+        #     & $installedChecks[$source]
+        # } elseif (-not [string]::IsNullOrWhiteSpace($App.CheckPath)) {
+        #     Test-Path -LiteralPath $App.CheckPath
+        # } else {
+        #     $false
+        # }
+
+
+        $isInstalled = switch ($source) {
+            'winget' { Test-WingetAppInstalled -App $App; break }
+            'choco'  { Test-ChocoAppInstalled -App $App; break }
+            default  { $false }
+        }
+
+        if (-not $isInstalled -and -not [string]::IsNullOrWhiteSpace($App.checkPath)) {
+            $expandedPath = [Environment]::ExpandEnvironmentVariables($App.checkPath)
+            $isInstalled = Test-Path -LiteralPath $expandedPath
+            if ($isInstalled) { Write-Verbose "[$source] Found by checkPath '$expandedPath'" }
+        }
+
+        if (-not $isInstalled) {
+            $isInstalled = Test-AppInstalledInRegistry -Name $name
+            if ($isInstalled) { Write-Verbose "[$source] Found by registry display name '$name'" }
+        }
+
+        if ($isInstalled) {
+            Write-Host "Skipping: $name (already installed)" -ForegroundColor Yellow
+            return
+        }
+
+        if ($Confirm -and -not (Confirm-Action -Message "Install $source app '$name'?")) {
+            Write-Verbose "[$source] User skipped: $name"
+            Write-Host "Skipping $source app: $name"
+            return
+        }
+
+        Write-Verbose "[$source] Queuing for install: $name"
+        $App
+    }
+}
+
+
+$script:WingetInstalledCache = $null
+$script:ChocoInstalledText = $null
+$script:RegistryInstalledCache = $null
+
+function Get-RegistryInstalledCache {
+    if ($null -ne $script:RegistryInstalledCache) { return $script:RegistryInstalledCache }
+
+    Write-Verbose "[registry] Building installed apps cache..."
+    $script:RegistryInstalledCache = @{}
+
+    $regPaths = @(
+        'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+
+    foreach ($path in $regPaths) {
+        Get-ItemProperty $path -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName } |
+            ForEach-Object { $script:RegistryInstalledCache[$_.DisplayName] = $true }
+    }
+
+    $script:RegistryInstalledCache
+}
+
+function Test-AppInstalledInRegistry {
+    param([Parameter(Mandatory)][string]$Name)
+    $cache = Get-RegistryInstalledCache
+    if ($cache.ContainsKey($Name)) { return $true }
+    # Also check if any registry entry starts with the app name (catches "Git version 2.x")
+    return [bool]($cache.Keys | Where-Object { $_ -like "$Name*" } | Select-Object -First 1)
+}
+
+function Get-ChocoInstalledText {
+    if ($null -eq $script:ChocoInstalledText) {
+        Write-Verbose "[choco] Building installed cache..."
+        $script:ChocoInstalledText = [string]::Join("`n", (choco search --local-only --limit-output 2>$null))
+    }
+
+    $script:ChocoInstalledText
+}
+
+function Get-WingetInstalledCache {
+    if ($null -ne $script:WingetInstalledCache) { return $script:WingetInstalledCache }
+
+    Write-Verbose "[winget] Building installed cache via Microsoft.WinGet.Client..."
+    Import-Module 'Microsoft.WinGet.Client' -ErrorAction SilentlyContinue
+    $script:WingetInstalledCache = @{}
+    $packages = Get-WinGetPackage -ErrorAction SilentlyContinue
+    foreach ($pkg in $packages) {
+        if ($pkg.Id)   { $script:WingetInstalledCache[$pkg.Id]   = $true }
+        if ($pkg.Name) { $script:WingetInstalledCache[$pkg.Name] = $true }
+    }
+
+    $script:WingetInstalledCache
+}
+
+function Test-WingetAppInstalled {
+    param(
+        [Parameter(Mandatory)]
+        [object]$App
+    )
+
+    $effectiveId = if ($App.PSObject.Properties['wingetId'] -and
+        -not [string]::IsNullOrWhiteSpace($App.wingetId)) {
+        $App.wingetId
+    } else {
+        $App.Name
+    }
+
+    if (Get-Module -ListAvailable -Name 'Microsoft.WinGet.Client' -ErrorAction SilentlyContinue) {
+        $cache = Get-WingetInstalledCache
+        if ($cache.ContainsKey($effectiveId)) {
+            Write-Verbose "[winget] Found by id '$effectiveId' (module cache)"
+            return $true
+        }
+        if ($cache.ContainsKey($App.Name)) {
+            Write-Verbose "[winget] Found by name '$($App.Name)' (module cache)"
+            return $true
+        }
+        return $false
+    }
+
+    Write-Verbose "[winget] Checking installed (no module): $effectiveId"
+    $byId   = @(winget list --id   $effectiveId --exact --accept-source-agreements 2>$null) | Where-Object { $_ -match [regex]::Escape($effectiveId) }
+    $byName = @(winget list --name $App.Name    --exact --accept-source-agreements 2>$null) | Where-Object { $_ -match [regex]::Escape($App.Name) }
+    if ($byId.Count -gt 0) {
+        Write-Verbose "[winget] Found by id '$effectiveId' (winget list --id)"
+        return $true
+    }
+    if ($byName.Count -gt 0) {
+        Write-Verbose "[winget] Found by name '$($App.Name)' (winget list --name)"
+        return $true
+    }
+    return $false
+}
+
+function Test-ChocoAppInstalled {
+    param(
+        [Parameter(Mandatory)]
+        [object]$App
+    )
+
+    $effectiveId = if ($App.PSObject.Properties['chocoId'] -and
+        -not [string]::IsNullOrWhiteSpace($App.chocoId)) {
+        $App.chocoId
+    } else {
+        $App.Name
+    }
+
+    $installed = Get-ChocoInstalledText
+
+    return $installed -match "(?m)^$([regex]::Escape($effectiveId))\|"
+}
+
+
+
+function Invoke-AppPostInstallAction
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [object]$App,
+
+        [bool]$WasInstalled = $true
+    )
+
+    process {
+
+    if(-not $App){
+        Write-Warning "Invoke-AppPostInstallAction received null/empty app object. Skipping."
         return
+    }
+
+    Write-Verbose "[post-install] Checking post-install for: $($App.name)"
+
+    if (-not $App.PSObject.Properties['postInstall'] -or -not $App.postInstall) {
+        Write-Verbose "[post-install] No postInstall config for: $($App.name)"
+        $App; return
     }
 
     $postInstall = $App.postInstall
-    if (-not $postInstall) {
-        return
-    }
 
     $runWhen = "installed"
     if ($postInstall.PSObject.Properties['runWhen'] -and -not [string]::IsNullOrWhiteSpace($postInstall.runWhen)) {
@@ -33,12 +258,13 @@ function Invoke-AppPostInstallAction
     }
 
     if ($runWhen -ieq "installed" -and -not $WasInstalled) {
-        return
+        Write-Verbose "[post-install] Skipping (runWhen=installed but app was not installed): $($App.name)"
+        $App; return
     }
 
     if (-not $postInstall.PSObject.Properties['scriptPath'] -or [string]::IsNullOrWhiteSpace($postInstall.scriptPath)) {
         Write-Warning "Skipping post-install for $($App.name): scriptPath is missing."
-        return
+        $App; return
     }
 
     $repoRoot = Split-Path -Path $PSScriptRoot -Parent
@@ -52,7 +278,7 @@ function Invoke-AppPostInstallAction
 
     if (-not (Test-Path -LiteralPath $resolvedScriptPath)) {
         Write-Warning "Skipping post-install for $($App.name): script not found at '$resolvedScriptPath'."
-        return
+        $App; return
     }
 
     $promptMessage = "Run post-install script for '$($App.name)'?"
@@ -62,7 +288,7 @@ function Invoke-AppPostInstallAction
 
     if (-not (Confirm-Action -Message $promptMessage)) {
         Write-Host "Skipping post-install for $($App.name)."
-        return
+        $App; return
     }
 
     $argumentList = @()
@@ -76,8 +302,10 @@ function Invoke-AppPostInstallAction
     }
 
     try {
+        Write-Verbose "[post-install] Running post-install script for: $($App.name)"
         & $resolvedScriptPath @argumentList
-        Write-Host "Post-install finished for $($App.name)."
+        Write-Host "$($App.name) setup complete." -ForegroundColor Green
+        Write-Verbose "[post-install] Script finished for: $($App.name)"
     }
     catch {
         if ($continueOnError) {
@@ -87,118 +315,36 @@ function Invoke-AppPostInstallAction
             throw
         }
     }
+
+    $App
+    }
 }
 
 function Install-Apps
 {
     param(
-        [string[]]$InstallSources = @(),
-        [string]$DownloadDirectory = (Join-Path $env:TEMP "PsInstallNewMachine")
+        [ValidateSet('winget', 'choco', 'online', 'local', 'manual')]
+        [string]$InstallSource = '',
+        [string]$DownloadDirectory = (Join-Path $env:TEMP "PsInstallNewMachine"),
+        [switch]$Confirm
     )
 
-    $installedApps = @()
-    $apps = Get-Apps
-
-    if ($InstallSources.Count -gt 0) {
-        $sourceFilter = $InstallSources | ForEach-Object { $_.ToLowerInvariant() }
-        $apps = $apps | Where-Object {
-            -not [string]::IsNullOrWhiteSpace($_.installSource) -and $sourceFilter -contains $_.installSource.ToLowerInvariant()
-        }
+    $dispatch = [ordered]@{
+        'winget' = { Install-WingetApps -Confirm:$Confirm }
+        'choco'  = { Install-ChocoApps  -Confirm:$Confirm }
+        'online' = { Install-OnlineApps -DownloadDirectory $DownloadDirectory -Confirm:$Confirm }
+        'local'  = { Install-LocalApps  -Confirm:$Confirm }
+        'manual' = { Install-ManualApps -Confirm:$Confirm }
     }
 
-    foreach ($app in $apps) {
-        if ([string]::IsNullOrWhiteSpace($app.name) -or [string]::IsNullOrWhiteSpace($app.installSource)) {
-            Write-Warning "Skipping app entry due to missing name/installSource."
-            continue
-        }
-
-        $source = $app.installSource.ToLowerInvariant()
-        $installed = $false
-
-        switch ($source) {
-            "winget" {
-                $wingetId = $null
-                if ($app.PSObject.Properties['wingetId'] -and -not [string]::IsNullOrWhiteSpace($app.wingetId)) {
-                    $wingetId = [string]$app.wingetId
-                }
-
-                $installed = [bool](Install-AppFromWinget -name $app.name -id $wingetId)
-            }
-            "online" {
-                $installed = Install-AppFromOnlineSource -App $app -DownloadDirectory $DownloadDirectory
-            }
-            "local" {
-                $installed = Install-AppFromLocalSource -App $app
-            }
-            default {
-                Write-Warning "Skipping $($app.name): unsupported installSource '$($app.installSource)'."
-            }
-        }
-
-        if ($installed) {
-            $installedApps += $app.name
-        }
-
-        Invoke-AppPostInstallAction -App $app -WasInstalled:$installed
+    $sources = if (-not [string]::IsNullOrWhiteSpace($InstallSource)) {
+        @($InstallSource.ToLowerInvariant())
+    } else {
+        $dispatch.Keys
     }
 
-    return $installedApps
+    foreach ($source in $sources) {
+        & $dispatch[$source]
+    }
 }
 
-function Install-WingetApps
-{
-    $installedApps = @()
-    $wingetApps = @(Get-Apps | Where-Object {
-            -not [string]::IsNullOrWhiteSpace($_.installSource) -and $_.installSource.ToLowerInvariant() -eq "winget"
-        })
-
-    foreach ($app in $wingetApps) {
-        if ([string]::IsNullOrWhiteSpace($app.name)) {
-            Write-Warning "Skipping winget app entry due to missing name."
-            continue
-        }
-
-        $wingetId = $null
-        if ($app.PSObject.Properties['wingetId'] -and -not [string]::IsNullOrWhiteSpace($app.wingetId)) {
-            $wingetId = [string]$app.wingetId
-        }
-
-        $installed = [bool](Install-AppFromWinget -name $app.name -id $wingetId)
-        if ($installed) {
-            $installedApps += $app.name
-        }
-
-        Invoke-AppPostInstallAction -App $app -WasInstalled:$installed
-    }
-
-    return $installedApps
-}
-
-function Install-AppFromWinget
-{
-    param(
-        [string]$name = "",
-        [string]$id = ""
-    )
-
-    $effectiveId = if (-not [string]::IsNullOrWhiteSpace($id)) { $id } else { $name }
-    $displayName = if (-not [string]::IsNullOrWhiteSpace($name)) { $name } else { $effectiveId }
-
-    $listById = winget list --id $effectiveId --exact 2>$null
-    $listByName = winget list --name $displayName --exact 2>$null
-    $foundById = [String]::Join("", $listById).Contains($effectiveId)
-    $foundByName = [String]::Join("", $listByName).Contains($displayName)
-    $alreadyInstalled = $foundById -or $foundByName
-    if (-not $alreadyInstalled) {
-        if (-not (Confirm-Action -Message "Install winget app '$displayName'?")) {
-            return $false
-        }
-        Write-host "Installing: " $displayName
-        winget install -e -h --accept-source-agreements --accept-package-agreements --id $effectiveId | Out-Null
-        return $true
-    }
-    else {
-        Write-host "Skipping: " $displayName " (already installed)" -ForegroundColor Yellow
-    }
-    return $false
-}

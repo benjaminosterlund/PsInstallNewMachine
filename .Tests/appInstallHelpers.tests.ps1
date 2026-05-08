@@ -1,92 +1,67 @@
 # Pester https://pester.dev/docs/usage/mocking
 BeforeAll{
-    . (Join-Path $PSScriptRoot '..\Helpers\appInstallHelpers.ps1')
     . (Join-Path $PSScriptRoot '..\Helpers\helpers.ps1')
+    . (Join-Path $PSScriptRoot '..\Helpers\appInstallHelpers.ps1')
+    . (Join-Path $PSScriptRoot '..\Helpers\wingetAppInstallHelpers.ps1')
+    . (Join-Path $PSScriptRoot '..\Helpers\chocoAppInstallHelpers.ps1')
     . (Join-Path $PSScriptRoot '..\Helpers\onlineAppInstallHelpers.ps1')
     . (Join-Path $PSScriptRoot '..\Helpers\localAppInstallHelpers.ps1')
+    . (Join-Path $PSScriptRoot '..\Helpers\manualAppInstallHelpers.ps1')
 }
 
 Describe 'installApps' {
     BeforeEach{
         Mock Get-Apps {
             return @(
-                @{name = "WingetApp"; installSource = "winget" },
-                @{name = "OnlineApp"; installSource = "online"; url = "https://example.com/app.exe" },
-                @{name = "LocalApp"; installSource = "local"; installerPath = "\\nas\apps\LocalApp.exe" }
+                @{ name = 'WingetApp'; installSource = 'winget'; wingetId = 'WingetApp.Id' },
+                @{ name = 'OnlineApp'; installSource = 'online'; url = 'https://example.com/app.exe' },
+                @{ name = 'LocalApp';  installSource = 'local';  installerPath = 'LocalApp\setup.exe' }
             )
         }
-        Mock Install-AppFromWinget {
-            param(
-                [string]$name = ""
-            )
-            return $true
-        }
-        Mock Install-AppFromOnlineSource {
-            param(
-                [object]$App,
-                [string]$DownloadDirectory
-            )
-            return $true
-        }
-        Mock Install-AppFromLocalSource {
-            param(
-                [object]$App
-            )
-            return $true
-        }
-        Mock Invoke-AppPostInstallAction {}
-        Mock Confirm-Action {
-            return $true
+        Mock Install-AppFromWinget       { $App }
+        Mock Install-AppFromOnlineSource { $App }
+        Mock Install-AppFromLocalSource  { $App }
+        Mock Invoke-AppPostInstallAction { $App }
+        Mock Assert-ChocoAvailable       { $true }
+        Mock Test-WingetAppInstalled     { $false }
+        Mock Test-AppInstalledInRegistry { $false }
+        Mock Get-InstallConfig {
+            [PSCustomObject]@{ LocalInstallerDirs = @('C:\Installers') }
         }
     }
 
-    it "CanRunTest"{
-        1 | should -be 1
+    It 'CanRunTest' {
+        1 | Should -Be 1
     }
 
     It 'ShouldRunInstallAppsForAllSources' {
         Install-Apps -DownloadDirectory $env:TEMP
 
-        Should -Invoke -CommandName Install-AppFromWinget -Times 1
+        Should -Invoke -CommandName Install-AppFromWinget       -Times 1
         Should -Invoke -CommandName Install-AppFromOnlineSource -Times 1
-        Should -Invoke -CommandName Install-AppFromLocalSource -Times 1
-        Should -Invoke -CommandName Invoke-AppPostInstallAction -Times 3
+        Should -Invoke -CommandName Install-AppFromLocalSource  -Times 1
     }
 
     It 'ShouldFilterByInstallSource' {
-        Install-Apps -InstallSources @("winget") -DownloadDirectory $env:TEMP
+        Install-Apps -InstallSource 'winget' -DownloadDirectory $env:TEMP
 
-        Should -Invoke -CommandName Install-AppFromWinget -Times 1
+        Should -Invoke -CommandName Install-AppFromWinget       -Times 1
         Should -Invoke -CommandName Install-AppFromOnlineSource -Times 0
-        Should -Invoke -CommandName Install-AppFromLocalSource -Times 0
+        Should -Invoke -CommandName Install-AppFromLocalSource  -Times 0
     }
 
     It 'ShouldRunInstallWingetAppsWrapper' {
         Install-WingetApps
 
-        Should -Invoke -CommandName Confirm-Action -Times 1
-        Should -Invoke -CommandName Install-AppFromWinget -Times 1
+        Should -Invoke -CommandName Install-AppFromWinget       -Times 1
         Should -Invoke -CommandName Invoke-AppPostInstallAction -Times 1
-        Should -Invoke -CommandName Install-AppFromOnlineSource -Times 0
-        Should -Invoke -CommandName Install-AppFromLocalSource -Times 0
     }
 
     It 'ShouldSkipWingetInstallWhenUserDeclines' {
-        Mock Confirm-Action {
-            return $false
-        }
+        Mock Confirm-Action { $false }
 
-        $installedApps = Install-WingetApps
+        Install-WingetApps -Confirm | Out-Null
 
-        $installedApps.Count | Should -Be 0
         Should -Invoke -CommandName Install-AppFromWinget -Times 0
-    }
-
-    It 'ShouldReturnInstalledApps' {
-        $installedApps = Install-Apps -DownloadDirectory $env:TEMP
-        
-        $installedApps -Contains "WingetApp" | Should -Be $true
-        $installedApps -Contains "OnlineApp" | Should -Be $true
-        $installedApps -Contains "LocalApp" | Should -Be $true
     }
 }

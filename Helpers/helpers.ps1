@@ -49,10 +49,14 @@ function Get-InstallConfig {
             $localInstallerDirs = $localInstallerDirsRaw.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
         }
 
+        $fileZillaSiteManagerSource = Read-Host "Enter path to FileZilla sitemanager.xml source file (optional, e.g. \\NAS1\Backups\sitemanager.xml)"
+        $fileZillaSiteManagerSource = $fileZillaSiteManagerSource.Trim().Trim('"')
+
         $config = [PSCustomObject]@{
-            GitName = $gitName
-            GitEmail = $gitEmail
-            LocalInstallerDirs = $localInstallerDirs
+            GitName                    = $gitName
+            GitEmail                   = $gitEmail
+            LocalInstallerDirs         = $localInstallerDirs
+            FileZillaSiteManagerSource = $fileZillaSiteManagerSource
         }
 
         if (-not (Test-Path -LiteralPath $configDir)) {
@@ -84,7 +88,11 @@ function Get-InstallConfig {
         $config | Add-Member -NotePropertyName LocalInstallerDirs -NotePropertyValue @()
     }
 
-    $config.LocalInstallerDirs = @([string[]]$config.LocalInstallerDirs | ForEach-Object { $_.Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $config.LocalInstallerDirs = @([string[]]$config.LocalInstallerDirs | ForEach-Object { $_.Trim().Trim('"') } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+
+    if (-not $config.PSObject.Properties['FileZillaSiteManagerSource']) {
+        $config | Add-Member -NotePropertyName FileZillaSiteManagerSource -NotePropertyValue ''
+    }
 
     if ($config.LocalInstallerDirs.Count -eq 0) {
         Write-Host "No local installer directories configured. You can add them later in config/config.json under LocalInstallerDirs."

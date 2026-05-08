@@ -19,21 +19,16 @@ Describe 'online app helpers' {
         Mock Install-AppFromOnlineSource {
             return $true
         }
-        Mock Invoke-AppPostInstallAction {}
+        Mock Invoke-AppPostInstallAction { $App }
+        Mock Test-AppInstalledInRegistry { $false }
     }
 
     It 'ShouldPromptPerOnlineAppAndInstall' {
-        Install-OnlineApps -DownloadDirectory $env:TEMP | Out-Null
+        Install-OnlineApps -DownloadDirectory $env:TEMP -Confirm | Out-Null
 
         Should -Invoke -CommandName Confirm-Action -Times 2
         Should -Invoke -CommandName Install-AppFromOnlineSource -Times 2
         Should -Invoke -CommandName Invoke-AppPostInstallAction -Times 2
-    }
-
-    It 'ShouldReturnInstalledOnlineApps' {
-        $installed = Install-OnlineApps -DownloadDirectory $env:TEMP
-        $installed -Contains 'Online1' | Should -Be $true
-        $installed -Contains 'Online2' | Should -Be $true
     }
 
     It 'ShouldSkipInstallWhenUserDeclines' {
@@ -41,9 +36,8 @@ Describe 'online app helpers' {
             return $false
         }
 
-        $installed = Install-OnlineApps -DownloadDirectory $env:TEMP
+        Install-OnlineApps -DownloadDirectory $env:TEMP -Confirm | Out-Null
 
-        $installed.Count | Should -Be 0
         Should -Invoke -CommandName Install-AppFromOnlineSource -Times 0
     }
 }

@@ -1,81 +1,89 @@
 function Install-OnlineApps
 {
+    [CmdletBinding()]
     param(
-        [string]$DownloadDirectory = (Join-Path $env:TEMP "PsInstallNewMachine")
+        [string]$DownloadDirectory = (Join-Path $env:TEMP "PsInstallNewMachine"),
+        [switch]$Confirm
     )
 
-    $installedApps = @()
-    $onlineApps = @(Get-Apps | Where-Object {
-            -not [string]::IsNullOrWhiteSpace($_.installSource) -and $_.installSource.ToLowerInvariant() -eq "online"
-        })
-
-    foreach ($app in $onlineApps) {
-        if ([string]::IsNullOrWhiteSpace($app.name)) {
-            Write-Warning "Skipping online app entry due to missing name."
-            continue
-        }
-
-        if (-not (Confirm-Action -Message "Install online app '$($app.name)'?")) {
-            Write-Host "Skipping online app: $($app.name)"
-            continue
-        }
-
-        $installed = Install-AppFromOnlineSource -App $app -DownloadDirectory $DownloadDirectory
-        if ($installed) {
-            $installedApps += $app.name
-        }
-
-        Invoke-AppPostInstallAction -App $app -WasInstalled:$installed
-    }
-
-    return $installedApps
+    Get-AppsBySource 'online' | Where-AppShouldInstall -Confirm:$Confirm | Install-AppFromOnlineSource -DownloadDirectory $DownloadDirectory | Invoke-AppPostInstallAction | Out-Null
 }
 
 function Install-AppFromOnlineSource
 {
+    [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory, ValueFromPipeline)]
         [object]$App,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string]$DownloadDirectory
     )
 
-    if ([string]::IsNullOrWhiteSpace($App.name) -or [string]::IsNullOrWhiteSpace($App.url)) {
-        Write-Warning "Skipping online app entry due to missing name/url."
-        return $false
+    process {
+        Write-Verbose "[online] Determining install strategy for '$($App.name)'"
+
+        if ($App.PSObject.Properties['installScriptPath'] -and -not [string]::IsNullOrWhiteSpace($App.installScriptPath)) {
+            $resolvedScriptPath = Resolve-ScriptPath $App.installScriptPath
+            if (-not (Test-Path -LiteralPath $resolvedScriptPath -PathType Leaf)) {
+                Write-Error "Install script for '$($App.name)' not found at '$resolvedScriptPath'." -Category ObjectNotFound -TargetObject $App
+                return
+            }
+            Write-Verbose "[online] Using install script: $resolvedScriptPath"
+            Write-Host "Installing (script): $($App.name)"
+            try {
+                & $resolvedScriptPath -ErrorAction Stop
+            }
+            catch {
+                Write-Error "Install script for '$($App.name)' failed." -Exception $_.Exception -Category OperationStopped -TargetObject $App
+                return
+            }
+            $App
+            return
+        }
+
+        if ($App.PSObject.Properties['url'] -and -not [string]::IsNullOrWhiteSpace($App.url)) {
+            $fileName = $App.fileName
+            if ([string]::IsNullOrWhiteSpace($fileName)) {
+                $fileName = [System.IO.Path]::GetFileName(([Uri]$App.url).AbsolutePath)
+            }
+            if ([string]::IsNullOrWhiteSpace($fileName)) {
+                $fileName = "$($App.name).exe"
+            }
+            $installerPath = Join-Path $DownloadDirectory $fileName
+
+            Write-Verbose "[online] Downloading '$($App.name)' from '$($App.url)'"
+            Write-Host "Downloading: $($App.name)"
+            Invoke-WebRequest -Uri $App.url -OutFile $installerPath
+
+            $argumentList = @()
+            if ($App.installArgs) { $argumentList += [string[]]$App.installArgs }
+
+            Write-Host "Installing: $($App.name)"
+            $process = Start-Process -FilePath $installerPath -ArgumentList $argumentList -Wait -PassThru
+            if ($process.ExitCode -ne 0) {
+                Write-Error "Installer for '$($App.name)' exited with code $($process.ExitCode)."
+                return
+            }
+            $App
+            return
+        }
+
+        Write-Warning "No install strategy found for '$($App.name)' (needs 'url' or 'installScriptPath')."
+    }
+}
+
+function Resolve-ScriptPath {
+    param(
+        [Parameter(Mandatory)]
+        [string]$ScriptPath,
+
+        [string]$BasePath = (Split-Path $PSScriptRoot -Parent)
+    )
+
+    if ([System.IO.Path]::IsPathRooted($ScriptPath)) {
+        return $ScriptPath
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($App.checkPath) -and (Test-Path -LiteralPath $App.checkPath)) {
-        Write-Host "Skipping: $($App.name) (already installed)"
-        return $false
-    }
-
-    $fileName = $App.fileName
-    if ([string]::IsNullOrWhiteSpace($fileName)) {
-        $fileName = [System.IO.Path]::GetFileName(([Uri]$App.url).AbsolutePath)
-    }
-    if ([string]::IsNullOrWhiteSpace($fileName)) {
-        $fileName = "$($App.name).exe"
-    }
-
-    $installerPath = Join-Path $DownloadDirectory $fileName
-
-    Write-Host "Downloading: $($App.name)"
-    Invoke-WebRequest -Uri $App.url -OutFile $installerPath
-
-    $argumentList = @()
-    if ($App.installArgs) {
-        $argumentList += [string[]]$App.installArgs
-    }
-
-    Write-Host "Installing: $($App.name)"
-    $process = Start-Process -FilePath $installerPath -ArgumentList $argumentList -Wait -PassThru
-
-    if ($process.ExitCode -eq 0) {
-        return $true
-    }
-
-    Write-Warning "Installer for $($App.name) exited with code $($process.ExitCode)."
-    return $false
+    return (Join-Path $BasePath $ScriptPath)
 }

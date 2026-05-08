@@ -41,7 +41,8 @@
   {
     "name": "Google Chrome",
     "installSource": "winget",
-    "wingetId": "Google.Chrome"
+    "wingetId": "Google.Chrome",
+    "checkPath": "%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe"
   },
   {
     "name": "Firefox Developer Edition (en-US)",
@@ -78,7 +79,8 @@
   {
     "wingetId": "OpenJS.NodeJS.LTS",
     "name": "Node.js (LTS)",
-    "installSource": "winget"
+    "installSource": "winget",
+    "checkPath": "C:\\Program Files\\nodejs\\node.exe"
   },
   {
     "name": "VLC media player",
@@ -98,7 +100,8 @@
   {
     "name": "Microsoft SQL Server 2025 Express",
     "wingetId": "Microsoft.SQLServer.2025.Express",
-    "installSource": "winget"
+    "installSource": "winget",
+    "checkService": "MSSQL$SQLEXPRESS"
   },
   {
     "wingetId": "Microsoft.SQLServerManagementStudio.22",
@@ -112,11 +115,26 @@
   },
   {
     "name": "FileZilla",
-    "installSource": "online",
-    "url": "https://download.filezilla-project.org/client/FileZilla_3.68.1_win64_sponsored2-setup.exe",
-    "fileName": "FileZilla_3.68.1_win64_sponsored2-setup.exe",
-    "installArgs": [],
-    "checkPath": "C:\\Program Files\\FileZilla FTP Client\\filezilla.exe"
+    "installSource": "manual",
+    "url": "https://filezilla-project.org/download.php?show_all=1",
+    "checkPath": "C:\\Program Files\\FileZilla FTP Client\\filezilla.exe",
+    "postInstall": {
+      "scriptPath": "Scripts\\PostInstall\\SetupFileZilla.ps1",
+      "args": [],
+      "promptMessage": "Copy FileZilla sitemanager.xml now?",
+      "runWhen": "always",
+      "continueOnError": true
+    }
+  },
+  {
+    "name": "WizTree",
+    "installSource": "choco",
+    "chocoId": "wiztree"
+  },
+  {
+    "name": "LockHunter",
+    "installSource": "choco",
+    "chocoId": "lockhunter"
   },
   {
     "name": "bpmanlyz.exe",
@@ -154,6 +172,12 @@
     "installSource": "winget",
     "wingetId": "FlorianHeidenreich.Mp3tag"
   },
+  {
+    "name": "Mp3Gain",
+    "installSource": "local",
+    "installerPath": "mp3gain.exe"
+  },
+
   {
     "name": "Copilot CLI",
     "installSource": "winget",
@@ -218,5 +242,20 @@
     "name": "Synology Assistant",
     "installSource": "winget",
     "wingetId": "Synology.Assistant"
-  }
+  },
+  {
+    "name": "Sysinternals Suite",
+    "installSource": "winget",
+    "wingetId": "Microsoft.Sysinternals.Suite"
+  },
+  {
+    "name": "HWiNFO",
+    "installSource": "winget",
+    "wingetId": "REALiX.HWiNFO"
+  },
+  {
+  "name": "Syncplay",
+  "installSource": "chocolatey",
+  "packageId": "syncplay"
+}
 ]

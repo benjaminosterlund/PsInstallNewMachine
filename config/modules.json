@@ -1,5 +1,9 @@
 [
   {
+    "name": "Microsoft.WinGet.Client",
+    "import": false
+  },
+  {
     "name": "PowerHTML",
     "import": false
   },

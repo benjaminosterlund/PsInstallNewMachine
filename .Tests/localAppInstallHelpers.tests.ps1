@@ -19,21 +19,16 @@ Describe 'local app helpers' {
         Mock Install-AppFromLocalSource {
             return $true
         }
-        Mock Invoke-AppPostInstallAction {}
+        Mock Invoke-AppPostInstallAction { $App }
+        Mock Test-AppInstalledInRegistry { $false }
     }
 
     It 'ShouldPromptPerLocalAppAndInstall' {
-        Install-LocalApps | Out-Null
+        Install-LocalApps -Confirm | Out-Null
 
         Should -Invoke -CommandName Confirm-Action -Times 2
         Should -Invoke -CommandName Install-AppFromLocalSource -Times 2
         Should -Invoke -CommandName Invoke-AppPostInstallAction -Times 2
-    }
-
-    It 'ShouldReturnInstalledLocalApps' {
-        $installed = Install-LocalApps
-        $installed -Contains 'Local1' | Should -Be $true
-        $installed -Contains 'Local2' | Should -Be $true
     }
 
     It 'ShouldSkipInstallWhenUserDeclines' {
@@ -41,9 +36,8 @@ Describe 'local app helpers' {
             return $false
         }
 
-        $installed = Install-LocalApps
+        Install-LocalApps -Confirm | Out-Null
 
-        $installed.Count | Should -Be 0
         Should -Invoke -CommandName Install-AppFromLocalSource -Times 0
     }
 }
@@ -67,7 +61,6 @@ Describe 'Install-AppFromLocalSource' {
             installArgs = @('/S')
         }
 
-        $result | Should -Be $true
         Should -Invoke -CommandName Start-Process -Times 1 -ParameterFilter { $FilePath -like '*NAS2*LocalTool*setup.exe' }
     }
 
@@ -81,6 +74,6 @@ Describe 'Install-AppFromLocalSource' {
             installerPath = 'LocalTool\setup.exe'
         }
 
-        $result | Should -Be $false
+        $result | Should -BeNullOrEmpty
     }
 }
