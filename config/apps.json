@@ -254,8 +254,13 @@
     "wingetId": "REALiX.HWiNFO"
   },
   {
-  "name": "Syncplay",
-  "installSource": "chocolatey",
-  "packageId": "syncplay"
-}
+    "name": "Syncplay",
+    "installSource": "winget",
+    "wingetId": "Syncplay.Syncplay"
+  },
+  {
+    "name": "Adobe Acrobat Reader 64-bit",
+    "installSource": "winget",
+    "wingetId": "Adobe.Acrobat.Reader.64-bit"
+  }
 ]
