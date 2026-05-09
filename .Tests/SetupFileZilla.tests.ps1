@@ -1,5 +1,5 @@
 BeforeAll {
-    . (Join-Path $PSScriptRoot '..\Helpers\helpers.ps1')
+    . (Join-Path $PSScriptRoot '..\Helpers\importHelpers.ps1')
 
     $script:SetupFileZillaPath = Join-Path $PSScriptRoot '..\Scripts\PostInstall\SetupFileZilla.ps1'
 }

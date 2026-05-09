@@ -49,32 +49,6 @@ function Where-AppShouldInstall {
             return
         }
 
-        # $installedChecks = @{
-        #     'winget' = {
-        #         # $effectiveId = if ($App.PSObject.Properties['wingetId'] -and -not [string]::IsNullOrWhiteSpace($App.wingetId)) { $App.wingetId } else { $App.name }
-        #         # $foundById   = [String]::Join('', (winget list --id $effectiveId --exact 2>$null)).Contains($effectiveId)
-        #         # $foundByName = [String]::Join('', (winget list --name $App.name --exact 2>$null)).Contains($App.name)
-        #         # $foundById -or $foundByName
-        #         Test-WingetAppInstalled -App $App; break
-        #     }
-        #     'choco' = {
-        #         # $effectiveId = if ($App.PSObject.Properties['chocoId'] -and -not [string]::IsNullOrWhiteSpace($App.chocoId)) { $App.chocoId } else { $App.name }
-        #         # [bool](choco list $effectiveId --exact --limit-output 2>$null)
-        #         Test-ChocoAppInstalled -App $App; break
-        #     }
-        #     default  { $false }
-        # }
-
-        # $isInstalled = if ($installedChecks.ContainsKey($source)) {
-        #     Write-Verbose "[$source] Checking installed status for: $name"
-        #     & $installedChecks[$source]
-        # } elseif (-not [string]::IsNullOrWhiteSpace($App.CheckPath)) {
-        #     Test-Path -LiteralPath $App.CheckPath
-        # } else {
-        #     $false
-        # }
-
-
         $isInstalled = switch ($source) {
             'winget' { Test-WingetAppInstalled  -App $App; break }
             'choco'  { Test-ChocoAppInstalled   -App $App; break }
@@ -232,9 +206,7 @@ function Invoke-AppPostInstallAction
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, ValueFromPipeline)]
-        [object]$App,
-
-        [bool]$WasInstalled = $true
+        [object]$App
     )
 
     process {
@@ -252,16 +224,6 @@ function Invoke-AppPostInstallAction
     }
 
     $postInstall = $App.postInstall
-
-    $runWhen = "installed"
-    if ($postInstall.PSObject.Properties['runWhen'] -and -not [string]::IsNullOrWhiteSpace($postInstall.runWhen)) {
-        $runWhen = [string]$postInstall.runWhen
-    }
-
-    if ($runWhen -ieq "installed" -and -not $WasInstalled) {
-        Write-Verbose "[post-install] Skipping (runWhen=installed but app was not installed): $($App.name)"
-        $App; return
-    }
 
     if (-not $postInstall.PSObject.Properties['scriptPath'] -or [string]::IsNullOrWhiteSpace($postInstall.scriptPath)) {
         Write-Warning "Skipping post-install for $($App.name): scriptPath is missing."

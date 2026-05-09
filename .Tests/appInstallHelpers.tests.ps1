@@ -1,12 +1,6 @@
 # Pester https://pester.dev/docs/usage/mocking
 BeforeAll{
-    . (Join-Path $PSScriptRoot '..\Helpers\helpers.ps1')
-    . (Join-Path $PSScriptRoot '..\Helpers\appInstallHelpers.ps1')
-    . (Join-Path $PSScriptRoot '..\Helpers\wingetAppInstallHelpers.ps1')
-    . (Join-Path $PSScriptRoot '..\Helpers\chocoAppInstallHelpers.ps1')
-    . (Join-Path $PSScriptRoot '..\Helpers\onlineAppInstallHelpers.ps1')
-    . (Join-Path $PSScriptRoot '..\Helpers\localAppInstallHelpers.ps1')
-    . (Join-Path $PSScriptRoot '..\Helpers\manualAppInstallHelpers.ps1')
+    . (Join-Path $PSScriptRoot '..\Helpers\importHelpers.ps1')
 }
 
 Describe 'installApps' {

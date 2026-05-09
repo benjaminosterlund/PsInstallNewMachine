@@ -7,11 +7,9 @@ param(
 
 . (Join-Path $PSScriptRoot "Helpers\importHelpers.ps1")
 
-# $ErrorActionPreference = "Stop"
-
 Assert-WingetAvailable
 
-$myConfig = Get-InstallConfig
+Get-InstallConfig | Out-Null
 
 $dirDownloads = "$env:USERPROFILE\Downloads"
 

@@ -1,7 +1,5 @@
 BeforeAll{
-    . (Join-Path $PSScriptRoot '..\Helpers\appInstallHelpers.ps1')
-    . (Join-Path $PSScriptRoot '..\Helpers\helpers.ps1')
-    . (Join-Path $PSScriptRoot '..\Helpers\localAppInstallHelpers.ps1')
+    . (Join-Path $PSScriptRoot '..\Helpers\importHelpers.ps1')
 }
 
 Describe 'local app helpers' {

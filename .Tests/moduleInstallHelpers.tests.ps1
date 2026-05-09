@@ -1,6 +1,6 @@
 # Pester https://pester.dev/docs/usage/mocking
 BeforeAll{
-    . (Join-Path $PSScriptRoot '..\Helpers\moduleInstallHelpers.ps1')
+    . (Join-Path $PSScriptRoot '..\Helpers\importHelpers.ps1')
 }
 
 Describe 'installModules' {
