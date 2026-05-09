@@ -63,8 +63,8 @@ Optional fields per entry:
   "GitName": "Your Name",
   "GitEmail": "your@email.com",
   "LocalInstallerDirs": [
-    "\\\\BenjiNAS\\home\\Program - install filer",
-    "C:\\Users\\oster\\Dropbox\\Program - installationsfiler"
+    "\\\\NAS\\share\\Installers",
+    "C:\\Users\\YourUser\\Dropbox\\Installers"
   ]
 }
 ```
