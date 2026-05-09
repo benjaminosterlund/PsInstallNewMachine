@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('winget', 'choco', 'online', 'local', 'manual')]
+    [ValidateSet('winget', 'choco', 'dotnettool', 'online', 'local', 'manual')]
     [string[]]$SkipSources = @(),
     [switch]$Confirm
 )
@@ -15,7 +15,7 @@ $myConfig = Get-InstallConfig
 
 $dirDownloads = "$env:USERPROFILE\Downloads"
 
-$allSources = @('winget', 'choco', 'online', 'local', 'manual')
+$allSources = @('winget', 'choco', 'dotnettool', 'online', 'local', 'manual')
 $sourcesToRun = $allSources | Where-Object { $_ -notin ($SkipSources | ForEach-Object { $_.ToLowerInvariant() }) }
 
 foreach ($source in $sourcesToRun) {

@@ -262,5 +262,60 @@
     "name": "Adobe Acrobat Reader 64-bit",
     "installSource": "winget",
     "wingetId": "Adobe.Acrobat.Reader.64-bit"
+  },
+  {
+    "name": "ILSpy",
+    "installSource": "winget",
+    "wingetId": "ICSharpCode.ILSpy"
+  },
+  {
+    "name": "ilspycmd",
+    "installSource": "dotnettool",
+    "dotnetToolId": "ilspycmd"
+  },
+  {
+    "name": "dotnet-ef",
+    "installSource": "dotnettool",
+    "dotnetToolId": "dotnet-ef"
+  },
+  {
+    "name": "dotnet-reportgenerator-globaltool",
+    "installSource": "dotnettool",
+    "dotnetToolId": "dotnet-reportgenerator-globaltool"
+  },
+  {
+    "name": "dotnet-counters",
+    "installSource": "dotnettool",
+    "dotnetToolId": "dotnet-counters"
+  },
+  {
+    "name": "dotnet-trace",
+    "installSource": "dotnettool",
+    "dotnetToolId": "dotnet-trace"
+  },
+  {
+    "name": "dotnet-dump",
+    "installSource": "dotnettool",
+    "dotnetToolId": "dotnet-dump"
+  },
+  {
+    "name": "dotnet-gcdump",
+    "installSource": "dotnettool",
+    "dotnetToolId": "dotnet-gcdump"
+  },
+  {
+    "name": "dotnet-stack",
+    "installSource": "dotnettool",
+    "dotnetToolId": "dotnet-stack"
+  },
+  {
+    "name": "dotnet-monitor",
+    "installSource": "dotnettool",
+    "dotnetToolId": "dotnet-monitor"
+  },
+  {
+    "name": "dotnet-sos",
+    "installSource": "dotnettool",
+    "dotnetToolId": "dotnet-sos"
   }
 ]

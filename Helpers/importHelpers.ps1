@@ -4,6 +4,7 @@
 . (Join-Path $PSScriptRoot "appInstallHelpers.ps1")
 . (Join-Path $PSScriptRoot "wingetAppInstallHelpers.ps1")
 . (Join-Path $PSScriptRoot "chocoAppInstallHelpers.ps1")
+. (Join-Path $PSScriptRoot "dotnetToolAppInstallHelpers.ps1")
 . (Join-Path $PSScriptRoot "onlineAppInstallHelpers.ps1")
 . (Join-Path $PSScriptRoot "localAppInstallHelpers.ps1")
 . (Join-Path $PSScriptRoot "manualAppInstallHelpers.ps1")

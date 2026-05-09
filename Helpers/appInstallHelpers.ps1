@@ -76,8 +76,9 @@ function Where-AppShouldInstall {
 
 
         $isInstalled = switch ($source) {
-            'winget' { Test-WingetAppInstalled -App $App; break }
-            'choco'  { Test-ChocoAppInstalled -App $App; break }
+            'winget' { Test-WingetAppInstalled  -App $App; break }
+            'choco'  { Test-ChocoAppInstalled   -App $App; break }
+            'dotnettool' { Test-DotnetToolInstalled -App $App; break }
             default  { $false }
         }
 
@@ -323,18 +324,19 @@ function Invoke-AppPostInstallAction
 function Install-Apps
 {
     param(
-        [ValidateSet('winget', 'choco', 'online', 'local', 'manual')]
+        [ValidateSet('winget', 'choco', 'dotnettool', 'online', 'local', 'manual')]
         [string]$InstallSource = '',
         [string]$DownloadDirectory = (Join-Path $env:TEMP "PsInstallNewMachine"),
         [switch]$Confirm
     )
 
     $dispatch = [ordered]@{
-        'winget' = { Install-WingetApps -Confirm:$Confirm }
-        'choco'  = { Install-ChocoApps  -Confirm:$Confirm }
-        'online' = { Install-OnlineApps -DownloadDirectory $DownloadDirectory -Confirm:$Confirm }
-        'local'  = { Install-LocalApps  -Confirm:$Confirm }
-        'manual' = { Install-ManualApps -Confirm:$Confirm }
+        'winget'  = { Install-WingetApps      -Confirm:$Confirm }
+        'choco'   = { Install-ChocoApps       -Confirm:$Confirm }
+        'dotnettool' = { Install-DotnetToolApps -Confirm:$Confirm }
+        'online'  = { Install-OnlineApps -DownloadDirectory $DownloadDirectory -Confirm:$Confirm }
+        'local'   = { Install-LocalApps  -Confirm:$Confirm }
+        'manual'  = { Install-ManualApps -Confirm:$Confirm }
     }
 
     $sources = if (-not [string]::IsNullOrWhiteSpace($InstallSource)) {
