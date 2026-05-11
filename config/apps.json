@@ -317,5 +317,17 @@
     "name": "dotnet-sos",
     "installSource": "dotnettool",
     "dotnetToolId": "dotnet-sos"
+  },
+  {
+    "name": "Python.Python.3.14",
+    "installSource": "winget",
+    "wingetId": "Python.Python.3.14",
+    "postInstall": {
+      "scriptPath": "Scripts\\PostInstall\\SetupPythonPipPackagesEnvPath.ps1",
+      "args": [],
+      "promptMessage": "Add Python 3.14 pip scripts directory to PATH?",
+      "runWhen": "installed",
+      "continueOnError": true
+    }
   }
 ]
