@@ -43,7 +43,7 @@ function Install-PsModule
         }
         return $true
     } else {
-        Write-Host "$name module is already installed." -ForegroundColor Yellow
+        Write-Host "Skipping module: $name  (already installed)." -ForegroundColor Yellow
     }
     return $false
 }
