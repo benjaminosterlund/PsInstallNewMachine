@@ -137,10 +137,11 @@
     "chocoId": "lockhunter"
   },
   {
-    "name": "bpmanlyz.exe",
+    "name": "BPM Analyzer",
     "installSource": "local",
     "installerPath": "bpmanlyz.exe",
-    "installArgs": []
+    "installArgs": [],
+    "checkPath": "C:\\Program Files (x86)\\MixMeister BPM Analyzer\\BpmAnalyzer.exe"
   },
   {
     "name": "CutePDF Writer",
