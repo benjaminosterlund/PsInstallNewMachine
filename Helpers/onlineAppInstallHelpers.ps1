@@ -23,25 +23,6 @@ function Install-AppFromOnlineSource
     process {
         Write-Verbose "[online] Determining install strategy for '$($App.name)'"
 
-        if ($App.PSObject.Properties['installScriptPath'] -and -not [string]::IsNullOrWhiteSpace($App.installScriptPath)) {
-            $resolvedScriptPath = Resolve-ScriptPath $App.installScriptPath
-            if (-not (Test-Path -LiteralPath $resolvedScriptPath -PathType Leaf)) {
-                Write-Error "Install script for '$($App.name)' not found at '$resolvedScriptPath'." -Category ObjectNotFound -TargetObject $App
-                return
-            }
-            Write-Verbose "[online] Using install script: $resolvedScriptPath"
-            Write-Host "Installing (script): $($App.name)"
-            try {
-                & $resolvedScriptPath -ErrorAction Stop
-            }
-            catch {
-                Write-Error "Install script for '$($App.name)' failed." -Exception $_.Exception -Category OperationStopped -TargetObject $App
-                return
-            }
-            $App
-            return
-        }
-
         if ($App.PSObject.Properties['url'] -and -not [string]::IsNullOrWhiteSpace($App.url)) {
             $fileName = $App.fileName
             if ([string]::IsNullOrWhiteSpace($fileName)) {

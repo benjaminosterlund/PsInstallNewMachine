@@ -286,7 +286,7 @@ function Invoke-AppPostInstallAction
 function Install-Apps
 {
     param(
-        [ValidateSet('winget', 'choco', 'dotnettool', 'online', 'local', 'manual')]
+        [ValidateSet('winget', 'choco', 'dotnettool', 'online', 'script', 'local', 'manual')]
         [string]$InstallSource = '',
         [string]$DownloadDirectory = (Join-Path $env:TEMP "PsInstallNewMachine"),
         [switch]$Confirm
@@ -297,6 +297,7 @@ function Install-Apps
         'choco'   = { Install-ChocoApps       -Confirm:$Confirm }
         'dotnettool' = { Install-DotnetToolApps -Confirm:$Confirm }
         'online'  = { Install-OnlineApps -DownloadDirectory $DownloadDirectory -Confirm:$Confirm }
+        'script'  = { Install-ScriptApps -Confirm:$Confirm }
         'local'   = { Install-LocalApps  -Confirm:$Confirm }
         'manual'  = { Install-ManualApps -Confirm:$Confirm }
     }

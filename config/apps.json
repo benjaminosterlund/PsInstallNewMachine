@@ -319,6 +319,11 @@
     "dotnetToolId": "dotnet-sos"
   },
   {
+    "name": "PHP",
+    "installSource": "script",
+    "installScriptPath": "Scripts\\InstallPhp.ps1"
+  },
+  {
     "name": "Python.Python.3.14",
     "installSource": "winget",
     "wingetId": "Python.Python.3.14",

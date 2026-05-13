@@ -14,6 +14,17 @@ function Assert-WingetAvailable {
     Write-Host "winget is available: $wingetVersion"
 }
 
+function Read-YesNo {
+    param(
+        [Parameter(Mandatory)] [string] $Prompt,
+        [bool] $Default = $true
+    )
+    $hint = if ($Default) { 'Y/n' } else { 'y/N' }
+    $answer = Read-Host "$Prompt [$hint]"
+    if ([string]::IsNullOrWhiteSpace($answer)) { return $Default }
+    return $answer -match '^[Yy]'
+}
+
 function Confirm-Action {
     param(
         [Parameter(Mandatory = $true)]
