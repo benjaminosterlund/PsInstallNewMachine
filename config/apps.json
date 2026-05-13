@@ -161,7 +161,8 @@
   {
     "name": "Docker Desktop",
     "installSource": "winget",
-    "wingetId": "Docker.DockerDesktop"
+    "wingetId": "Docker.DockerDesktop",
+    "installArgs": ["install", "--user"]
   },
   {
     "name": "FlaUInspect",
